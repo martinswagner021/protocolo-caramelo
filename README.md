@@ -8,6 +8,6 @@ Protocolo para chat P2P desenvolvido na disciplina de Tópicos Especiais em Rede
 
 - [ ] comunicacao entre clientes
 
-- [ ] threads nao caiam
+- [ ] menu do cliente
 
-- [ ] 
+- [ ] implementar threads
