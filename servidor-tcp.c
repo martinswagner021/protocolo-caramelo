@@ -6,10 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-
-#define TAM_MENSAGEM 255
-#define MAXPEDING 5
-#define PORTA_SERVIDOR 9999
+#include "caramelo.c"
 
 /* 
  * GLOSSARIO
@@ -50,75 +47,58 @@ typedef struct {
 }clientes;
 
 
-int cria_socket(int porta){
-
-    int sock;
-    struct sockaddr_in endereco;
-    if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) { 
-        printf("\n ERRO NA CRIAÇÃO DO SOCKET \n");fflush(stdout);
-        return -1;
-    }
-
-    if (porta > 0) {
-        memset(&endereco,0, sizeof(endereco));
-        endereco.sin_family = AF_INET; 
-        endereco.sin_addr.s_addr = htonl(INADDR_ANY);
-        endereco.sin_port = htons(porta);
-
-        if (bind(sock, (struct sockaddr *) &endereco, sizeof(endereco)) < 0) {
-            printf("\n ERRO NO BIND! \n");fflush(stdout);
-            return -1;
-        }
-
-        if (listen(sock, MAXPEDING)) {
-            printf("\n ERRO NO LISTEN! \n");fflush(stdout);
-            return -1;
-        }
-    }
-    return(sock);//sempre retornar o socket
-}
-
-int aceita_conexao(int sock){
-    int socket_cliente;
-    struct sockaddr_in endereco;
-    int tamanho_endereco;
-
-    tamanho_endereco = sizeof(endereco);
-
-    if ((socket_cliente = accept(sock, (struct sockaddr *) &endereco,\
-                                 (unsigned int *) &tamanho_endereco)) < 0) {
-        printf("\n ERRO NO ACCEPT! \n");fflush(stdout);
-        return 0;
-    }
-    return socket_cliente;
-}
-
-int receber_mensagem(char* mensagem, int sock){
-    memset((void *) mensagem, NULL, TAM_MENSAGEM);
-    
-    if (recv(sock, mensagem, TAM_MENSAGEM, 0) < 0) {
-        printf("\n ERRO NA RECEPÇÃO DA MENSAGEM! \n");fflush(stdout);
-        return -1;
-    }
-    printf("\n (TCP SERVER) MENSAGEM RECEBIDA: %s \n", mensagem); fflush(stdout);
-    return 0;
-}
-
-int enviar_mensagem(char* mensagem, int sock) //TODO rastrear o erro de quem não pode ter cedebido num broadcast opr exemplo
-{
-    if (send(sock, mensagem, strlen(mensagem), 0) != strlen(mensagem)) {
-        printf("\n (TCP SERVER) ERRO NO ENVIO DA MENSAGEM! \n");fflush(stdout);
-        return -1;
-    }
-
-    printf("\n (TCP SERVER) ENVIADO: %s \n", mensagem);fflush(stdout);
-
-    return 0;
-}
-
 int main(){
     
+    int sock;                   /* Socket */
+    int socket_cliente;         /* Socket de conexão com o cliente */
+    int resultado;              /* Resultado das funções */
+    char mensagem[TAM_MENSAGEM]; /* Buffer para a recepção da string de echo */
+    #ifdef WIN
+        WORD wPackedValues;
+        WSADATA  SocketInfo;
+        int      nLastError,
+                nVersionMinor = 1,
+                nVersionMajor = 1;
+        wPackedValues = (WORD)(((WORD)nVersionMinor)<< 8)|(WORD)nVersionMajor;
+        nLastError = WSAStartup(wPackedValues, &SocketInfo);
+    #endif
 
+    sock = criar_socket(PORTA_SERVIDOR);
+    if (sock < 0)
+    {
+        printf("\nErro na criação do socket!\n");
+        return(1);
+    }
+
+    for (;;) /* Loop eterno */
+    {
+        /* Aguarda por uma conexão e a aceita criando o socket de contato com o cliente */
+        socket_cliente = aceitar_conexao(sock);
+        if (socket_cliente == 0)
+        {
+            printf("\nErro na conexao do socket!\n");
+            return(1);
+        }
+
+        /* Recebe a mensagem do cliente */
+        resultado = receber_mensagem(mensagem,socket_cliente);
+        if (resultado < 0)
+        {
+            printf("\nErro no recebimento da mensagem\n");
+            return(1);
+        }
+
+        /* Devolve o conte�do da mensagem para o cliente */
+        resultado = enviar_mensagem(mensagem,socket_cliente);
+        if (resultado < 0)
+        {
+            printf("\nErro no envio da mensagem\n");
+            return(1);
+        }
+
+        close(socket_cliente);    /* Fecha o socket do cliente */
+    }
+    /*n�o passa por aqui */
 
 }
 
