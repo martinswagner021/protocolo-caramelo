@@ -7,9 +7,15 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#define TAM_MENSAGEM 255
+#define TAM_MAX_MENSAGEM 255
 #define MAXPEDING 5
-#define PORTA_SERVIDOR 9999
+#define PORTA_SERVIDOR 8888
+
+typedef struct cliente {
+    char nome[30];
+    int IP; // Representa o IP como um inteiro
+    short porta;
+} Cliente;
 
 int criar_socket(int porta){
 
@@ -70,24 +76,25 @@ int conectar_com_outro_dispositivo(int sock, char* IP, short porta){
 }
 
 int receber_mensagem(char* mensagem, int sock){
-    memset((void *) mensagem, (int) NULL, TAM_MENSAGEM);
+    memset((void *) mensagem, (int) NULL, TAM_MAX_MENSAGEM);
     
-    if (recv(sock, mensagem, TAM_MENSAGEM, 0) < 0) {
+    if (recv(sock, mensagem, TAM_MAX_MENSAGEM, 0) < 0) {
         printf("\n ERRO NA RECEPÇÃO DA MENSAGEM! \n");fflush(stdout);
         return -1;
     }
-    printf("\n (TCP SERVER) MENSAGEM RECEBIDA: %s \n", mensagem); fflush(stdout);
+
+    printf("\n (PID %d) MENSAGEM RECEBIDA: %s \n", getpid(), mensagem); fflush(stdout);
     return 0;
 }
 
 int enviar_mensagem(char* mensagem, int sock) //TODO rastrear o erro de quem não pode ter cedebido num broadcast opr exemplo
 {
     if (send(sock, mensagem, strlen(mensagem), 0) != strlen(mensagem)) {
-        printf("\n (TCP SERVER) ERRO NO ENVIO DA MENSAGEM! \n");fflush(stdout);
+        printf("\n (PID %d) ERRO NO ENVIO DA MENSAGEM! \n", getpid());fflush(stdout);
         return -1;
     }
 
-    printf("\n (TCP SERVER) ENVIADO: %s \n", mensagem);fflush(stdout);
+    printf("\n (PID %d) ENVIADO: %s \n", getpid(), mensagem);fflush(stdout);
 
     return 0;
 }
