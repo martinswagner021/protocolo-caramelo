@@ -13,7 +13,7 @@
 
 typedef struct cliente {
     char nome[30];
-    int IP; // Representa o IP como um inteiro
+    char IP[22]; // Representa o IP como um inteiro //de jg: as funções do leandro lidam com IP sendo char, e dps ele faz o casting pros big indian/little indian da vida, ent pra manter a conveniencia mudei pra char
     short porta;
 } Cliente;
 
@@ -75,6 +75,38 @@ int conectar_com_outro_dispositivo(int sock, char* IP, short porta){
     return 0;
 }
 
+int enviar_mensagem(char* mensagem, int sock) //TODO rastrear o erro de quem não pode ter cedebido num broadcast opr exemplo
+{
+    if (send(sock, mensagem, strlen(mensagem), 0) != strlen(mensagem)) {
+        printf("\n (PID %d) ERRO NO ENVIO DA MENSAGEM! \n", getpid());fflush(stdout);
+        return -1;
+    }
+
+    printf("\n (PID %d) ENVIADO: %s \n", getpid(), mensagem);fflush(stdout);
+
+    return 0;
+}
+
+int entrar_no_chat(int sock, char* IP, short porta, Cliente cliente){
+    
+    struct sockaddr_in endereco;
+    memset(&endereco, 0, sizeof(endereco));
+    endereco.sin_family = AF_INET;
+    endereco.sin_addr.s_addr = inet_addr(IP);
+    endereco.sin_port = htons(porta);
+
+    if (connect(sock, (struct sockaddr *) &endereco, sizeof(endereco)) < 0) {
+        printf("\n ERRO NA CONEXÃO \n");
+        return -1;
+    }
+    char mensagem_de_conexao[TAM_MAX_MENSAGEM];
+    //aqui está sendo formatada a mensagem de conexao ou registro mensionado no protocolo
+    snprintf(mensagem_de_conexao, sizeof mensagem_de_conexao, "R%s%hd%s", IP, porta, cliente.nome); // TODO ver como botar o tamanho da mensagem
+    enviar_mensagem(mensagem_de_conexao,sock);
+
+    return 0;
+}
+
 int receber_mensagem(char* mensagem, int sock){
     memset((void *) mensagem, (int) NULL, TAM_MAX_MENSAGEM);
     
@@ -87,14 +119,3 @@ int receber_mensagem(char* mensagem, int sock){
     return 0;
 }
 
-int enviar_mensagem(char* mensagem, int sock) //TODO rastrear o erro de quem não pode ter cedebido num broadcast opr exemplo
-{
-    if (send(sock, mensagem, strlen(mensagem), 0) != strlen(mensagem)) {
-        printf("\n (PID %d) ERRO NO ENVIO DA MENSAGEM! \n", getpid());fflush(stdout);
-        return -1;
-    }
-
-    printf("\n (PID %d) ENVIADO: %s \n", getpid(), mensagem);fflush(stdout);
-
-    return 0;
-}
