@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <signal.h>
 #include "caramelo.c"
 
 /* 
@@ -39,20 +40,26 @@
  * criar socket
  * 
  * */
+volatile sig_atomic_t signal_received = 0;
+int sock;                   /* Socket */
+int socket_cliente;         /* Socket de conexão com o cliente */
 
-typedef struct {
-    char nome[30];
-    int IP;
-    short porta;
-}clientes;
+void sig_handler(int sig) {
+    printf("\nServidor encerrado pelo usuário.\n");
+    if (socket_cliente > 0) {
+        close(socket_cliente);
+    }
+    if (sock > 0) {
+        close(sock);
+    }
+    exit(0);
+}
 
 
 int main(){
-    
-    int sock;                   /* Socket */
-    int socket_cliente;         /* Socket de conexão com o cliente */
+
     int resultado;              /* Resultado das funções */
-    char mensagem[TAM_MENSAGEM]; /* Buffer para a recepção da string de echo */
+    char mensagem[TAM_MAX_MENSAGEM]; /* Buffer para a recepção da string de echo */
     #ifdef WIN
         WORD wPackedValues;
         WSADATA  SocketInfo;
@@ -70,7 +77,9 @@ int main(){
         return(1);
     }
 
-    for (;;) /* Loop eterno */
+    signal(SIGINT, sig_handler);
+
+    while(!signal_received) /* Loop eterno */
     {
         /* Aguarda por uma conexão e a aceita criando o socket de contato com o cliente */
         socket_cliente = aceitar_conexao(sock);
@@ -96,9 +105,8 @@ int main(){
             return(1);
         }
 
-        close(socket_cliente);    /* Fecha o socket do cliente */
+           /* Fecha o socket do cliente */
+        close(socket_cliente);
     }
-    /*n�o passa por aqui */
-
 }
 
