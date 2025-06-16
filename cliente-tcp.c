@@ -32,7 +32,7 @@ void manda_mensagem_cliente(int socket, int tam_IP, int tam_port, char IP_DESTIN
         puts("FALHA AO CONECTAR");
     }
     puts("Agora digite uma mensagem");
-    char mensagem[TAM_MENSAGEM];
+    char mensagem[TAM_MAX_MENSAGEM];
     scanf("%244s", mensagem);
     enviar_mensagem(mensagem, socket);
     // isso é pra supostamente ser feito em outra thread ent dps de enviar teria que fechar o socket
@@ -40,6 +40,7 @@ void manda_mensagem_cliente(int socket, int tam_IP, int tam_port, char IP_DESTIN
 
 int main(){
     int opcoes;
+    char* IP_SERVIDOR = "127.0.0.1"; //só pra testar numa maquina local, deve ser mudado posteriormente
     int tam_IP = 22;
     int tam_port = 6;
     char IP_DESTINATARIO[tam_IP];
@@ -47,10 +48,16 @@ int main(){
     int m_socket;
     int PORTA_LOCAL;
     char* NOME_DO_CLIENTE;
+    Cliente cliente = {
+        .nome  = "vascodagama",
+        .IP    = "192.168.169.169",
+        .porta = 6969
+};
     do {
         puts("Primeiro, digite a sua porta para recepçao de mensagens");
         scanf("%d", &PORTA_LOCAL);
-        // int m_socket = criar_socket(PORTA_LOCAL); //TODO vai ter que usar threads pra criar uma thread ouvindo
+        //criar_thread_socket() -> criação thread de escuta
+        //int m_socket = criar_socket(PORTA_LOCAL); //TODO vai ter que usar threads pra criar uma thread ouvindo
         clear_stdin();
         if ((m_socket = socket(PF_INET, SOCK_STREAM, 0)) < 0) { 
             printf("\n ERRO NA CRIAÇÃO DO SOCKET \n");fflush(stdout);
@@ -58,6 +65,7 @@ int main(){
     }
     }while (!m_socket);
     do {
+        puts(" ")
         puts("ESCOLHA UMA OPÇÃO");
         puts("1. Participar do chat");
         puts("2. Mandar mendagem");
@@ -72,9 +80,11 @@ int main(){
         switch (opcoes) {
             case 1:
                 puts("Participar do chat");
-                // entrar_no_chat(int sock, IP_SERVIDOR, PORTA_SERVIDOR, porta_de_escuta_local?, NOME_DOCLIENTE); fazer conexão com servidor
+                entrar_no_chat(m_socket, IP_SERVIDOR, PORTA_SERVIDOR, cliente); //fazer conexão com servidor
+                break;
             case 2:
                 manda_mensagem_cliente(m_socket, tam_IP, tam_port, IP_DESTINATARIO, PORTA_DESTINATARIO);
+                break;
             case 3:
             // loop de enviar_mensagem()
             case 4:
