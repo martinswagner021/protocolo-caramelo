@@ -98,7 +98,7 @@ int main(){
         }
 
         /* Devolve o conte�do da mensagem para o cliente */
-        resultado = enviar_mensagem(mensagem,socket_cliente);
+        resultado = enviar_mensagem("", 'A',socket_cliente);
         if (resultado < 0)
         {
             printf("\nErro no envio da mensagem\n");

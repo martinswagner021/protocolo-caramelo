@@ -75,14 +75,20 @@ int conectar_com_outro_dispositivo(int sock, char* IP, short porta){
     return 0;
 }
 
-int enviar_mensagem(char* mensagem, int sock) //TODO rastrear o erro de quem não pode ter cedebido num broadcast opr exemplo
+int enviar_mensagem(char* mensagem, char tipo, int sock) //TODO rastrear o erro de quem não pode ter cedebido num broadcast opr exemplo
 {
-    if (send(sock, mensagem, strlen(mensagem), 0) != strlen(mensagem)) {
+    char payload[TAM_MAX_MENSAGEM];
+    if (strlen(mensagem) > TAM_MAX_MENSAGEM - 4) {
+        printf("\n (PID %d) MENSAGEM MUITO GRANDE! \n", getpid());fflush(stdout);
+        return -1;
+    }
+    snprintf(payload, sizeof payload, "%03d%c%s", (int) strlen(mensagem), tipo, mensagem);
+    if (send(sock, payload, strlen(payload), 0) != strlen(payload)) {
         printf("\n (PID %d) ERRO NO ENVIO DA MENSAGEM! \n", getpid());fflush(stdout);
         return -1;
     }
 
-    printf("\n (PID %d) ENVIADO: %s \n", getpid(), mensagem);fflush(stdout);
+    printf("\n (PID %d) ENVIADO: %s \n", getpid(), payload);fflush(stdout);
 
     return 0;
 }
@@ -99,10 +105,11 @@ int entrar_no_chat(int sock, char* IP, short porta, Cliente cliente){
         printf("\n ERRO NA CONEXÃO \n");
         return -1;
     }
+    
     char mensagem_de_conexao[TAM_MAX_MENSAGEM];
-    //aqui está sendo formatada a mensagem de conexao ou registro mensionado no protocolo
-    snprintf(mensagem_de_conexao, sizeof mensagem_de_conexao, "R%s%hd%s", IP, porta, cliente.nome); // TODO ver como botar o tamanho da mensagem
-    enviar_mensagem(mensagem_de_conexao,sock);
+    snprintf(mensagem_de_conexao, sizeof mensagem_de_conexao, "%s|%hd|%s", IP, porta, cliente.nome); // TODO ver como botar o tamanho da mensagem
+    
+    enviar_mensagem(mensagem_de_conexao, 'R', sock);
 
     return 0;
 }
@@ -116,6 +123,8 @@ int receber_mensagem(char* mensagem, int sock){
     }
 
     printf("\n (PID %d) MENSAGEM RECEBIDA: %s \n", getpid(), mensagem); fflush(stdout);
+
+    char buffer[4], tam[3], tipo;
+    strncpy(tam, mensagem, 3);
     return 0;
 }
-

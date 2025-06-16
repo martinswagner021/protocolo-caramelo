@@ -34,7 +34,7 @@ void manda_mensagem_cliente(int socket, int tam_IP, int tam_port, char IP_DESTIN
     puts("Agora digite uma mensagem");
     char mensagem[TAM_MAX_MENSAGEM];
     scanf("%244s", mensagem);
-    enviar_mensagem(mensagem, socket);
+    enviar_mensagem(mensagem, '\0', socket);
     // isso é pra supostamente ser feito em outra thread ent dps de enviar teria que fechar o socket
 }
 
@@ -65,7 +65,7 @@ int main(){
     }
     }while (!m_socket);
     do {
-        puts(" ")
+        puts(" ");
         puts("ESCOLHA UMA OPÇÃO");
         puts("1. Participar do chat");
         puts("2. Mandar mendagem");
