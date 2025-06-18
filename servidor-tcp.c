@@ -40,6 +40,9 @@
  * criar socket
  * 
  * */
+
+Cliente* clientes[50];
+
 volatile sig_atomic_t signal_received = 0;
 int sock;                   /* Socket */
 int socket_cliente;         /* Socket de conexão com o cliente */
@@ -54,7 +57,6 @@ void sig_handler(int sig) {
     }
     exit(0);
 }
-
 
 int main(){
 

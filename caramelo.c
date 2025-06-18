@@ -114,17 +114,42 @@ int entrar_no_chat(int sock, char* IP, short porta, Cliente cliente){
     return 0;
 }
 
+Cliente parser_cliente(char* mensagem, int len) {
+    // Atenção: strtok não é thread-safe, então considere usar strtok_r ou outra abordagem se precisar de concorrência.
+    Cliente cliente;
+    strcpy(cliente.IP, strtok(mensagem, "|"));
+    cliente.porta = atoi(strtok(NULL, "|"));
+    strcpy(cliente.nome, strtok(NULL, "|"));
+
+    printf("\n %s %s %d \n", cliente.IP, cliente.nome, cliente.porta); fflush(stdout);
+
+    return cliente;
+}
+
 int receber_mensagem(char* mensagem, int sock){
     memset((void *) mensagem, (int) NULL, TAM_MAX_MENSAGEM);
     
-    if (recv(sock, mensagem, TAM_MAX_MENSAGEM, 0) < 0) {
+    char header[4];
+
+    if (recv(sock, header, 4, 0) < 0) {
         printf("\n ERRO NA RECEPÇÃO DA MENSAGEM! \n");fflush(stdout);
         return -1;
     }
 
-    printf("\n (PID %d) MENSAGEM RECEBIDA: %s \n", getpid(), mensagem); fflush(stdout);
+    int len;
+    char tipo;
+    sscanf(header, "%03d%c", &len, &tipo);
 
-    char buffer[4], tam[3], tipo;
-    strncpy(tam, mensagem, 3);
+    if (recv(sock, mensagem, len, 0) < 0) {
+        printf("\n ERRO NA RECEPÇÃO DA MENSAGEM! \n");fflush(stdout);
+        return -1;
+    }
+
+    if(tipo == 'R')
+    {
+        printf("\n (PID %d) MENSAGEM DE REGISTRO RECEBIDA: %s \n", getpid(), mensagem); fflush(stdout);
+        parser_cliente(mensagem, len); 
+    }
+
     return 0;
 }

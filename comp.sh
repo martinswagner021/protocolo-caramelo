@@ -1,6 +1,6 @@
 gcc -o servidor.out servidor-tcp.c
 ./servidor.out &
-gcc -o tc.out tc.c
-# ./tc.out 0.0.0.0 TAM R IP|PORTA|NOME|
-./tc.out 0.0.0.0 "22R0.0.0.0|8081|cliente1"
+gcc -o cliente.out cliente-tcp.c
+# ./cliente.out TAM R IP|PORTA|NOME|
+./cliente.out < input.txt
 kill -s INT $(pgrep servidor.out)
