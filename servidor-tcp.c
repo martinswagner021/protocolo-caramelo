@@ -99,6 +99,8 @@ int main(){
             return(1);
         }
 
+        printf("Resultado: %s", resultado);
+
         /* Devolve o conte�do da mensagem para o cliente */
         resultado = enviar_mensagem("", 'A',socket_cliente);
         if (resultado < 0)

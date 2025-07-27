@@ -68,7 +68,7 @@ int main(){
         puts(" ");
         puts("ESCOLHA UMA OPÇÃO");
         puts("1. Participar do chat");
-        puts("2. Mandar mendagem");
+        puts("2. Mandar mensagem");
         puts("3. Mandar broadcast");
         puts("4. Sair");
         

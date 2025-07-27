@@ -82,8 +82,22 @@ int enviar_mensagem(char* mensagem, char tipo, int sock) //TODO rastrear o erro 
         printf("\n (PID %d) MENSAGEM MUITO GRANDE! \n", getpid());fflush(stdout);
         return -1;
     }
+<<<<<<< Updated upstream
     snprintf(payload, sizeof payload, "%03d%c%s", (int) strlen(mensagem), tipo, mensagem);
     if (send(sock, payload, strlen(payload), 0) != strlen(payload)) {
+=======
+
+    printf("\n (PID %d) MENSAGEM RECEBIDA: %s \n", getpid(), mensagem); fflush(stdout);
+
+    char buffer[4], tam[3], tipo;
+    strncpy(tam, mensagem, 3);
+    return 0;
+}
+
+int enviar_mensagem(char* mensagem, int sock) //TODO rastrear o erro de quem não pode ter cedebido num broadcast opr exemplo
+{
+    if (send(sock, mensagem, strlen(mensagem), 0) != strlen(mensagem)) {
+>>>>>>> Stashed changes
         printf("\n (PID %d) ERRO NO ENVIO DA MENSAGEM! \n", getpid());fflush(stdout);
         return -1;
     }
